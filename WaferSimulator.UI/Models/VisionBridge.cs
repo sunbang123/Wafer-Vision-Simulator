@@ -1,0 +1,20 @@
+﻿using System;
+using System.Runtime.InteropServices;
+
+namespace WaferSimulator.UI.Models
+{
+    public class VisionBridge
+    {
+        private const string DllName = "WaferSimulator.Core.dll";
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int DetectWaferFaults(
+            IntPtr imageData,
+            int width,
+            int height,
+            int[] outXArray,
+            int[] outYArray,
+            int maxFaults
+        );
+    }
+}
