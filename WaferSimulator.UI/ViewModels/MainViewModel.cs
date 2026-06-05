@@ -8,7 +8,6 @@ using WaferSimulator.UI.Models;
 
 namespace WaferSimulator.UI.ViewModels
 {
-    // 화면에 결함 좌표를 리스트로 보여주기 위한 단순한 데이터 구조
     public class FaultItem
     {
         public int Index { get; set; }
@@ -19,13 +18,20 @@ namespace WaferSimulator.UI.ViewModels
     public class MainViewModel : INotifyPropertyChanged
     {
         private string _statusText = "장비 대기 중...";
+        private string _resultText = "[검사 결과] 버튼을 누르면 OpenCV 레이블링 연산이 시작됩니다.";
         private ObservableCollection<FaultItem> _faultList = new ObservableCollection<FaultItem>();
 
-        // UI에 바인딩될 속성 (값이 바뀌면 대시보드 화면이 알아서 갱신됨)
         public string StatusText
         {
             get => _statusText;
             set { _statusText = value; OnPropertyChanged(); }
+        }
+
+        // XML의 TextBlock과 연결될 ResultText 속성 추가
+        public string ResultText
+        {
+            get => _resultText;
+            set { _resultText = value; OnPropertyChanged(); }
         }
 
         public ObservableCollection<FaultItem> FaultList
@@ -34,7 +40,6 @@ namespace WaferSimulator.UI.ViewModels
             set { _faultList = value; OnPropertyChanged(); }
         }
 
-        // 검사 시작 버튼과 연결될 명령(Command)
         public ICommand StartInspectionCommand { get; }
 
         public MainViewModel()
@@ -42,58 +47,55 @@ namespace WaferSimulator.UI.ViewModels
             StartInspectionCommand = new RelayCommand(ExecuteInspection);
         }
 
-        // 버튼을 누르면 실행되는 핵심 비전 검사 로직
         private void ExecuteInspection()
         {
             StatusText = "웨이퍼 검사 중 (OpenCV 가동)...";
+            ResultText = "비전 코어에서 데이터를 분석하는 중입니다...";
             FaultList.Clear();
 
-            // 1. 가상의 500x500 흑백 이미지 생성 (C# 배열 부하 최소화)
             int width = 500;
             int height = 500;
             byte[] rawImageData = new byte[width * height];
 
-            // 2. 가상의 불량 데이터 심기 (픽셀값 255 = 흰색 결함)
-            // 결함 생성을 C#이 주도합니다.
-            rawImageData[100 * width + 150] = 255; // (150, 100)
-            rawImageData[250 * width + 300] = 255; // (300, 250)
-            rawImageData[400 * width + 450] = 255; // (450, 400)
+            // 가상 불량 데이터 심기
+            rawImageData[100 * width + 150] = 255;
+            rawImageData[250 * width + 300] = 255;
+            rawImageData[400 * width + 450] = 255;
 
-            // 3. C++ DLL에게 채워달라고 보낼 빈 좌표 공책(배열) 준비
             int maxFaults = 100;
             int[] outXArray = new int[maxFaults];
             int[] outYArray = new int[maxFaults];
 
-            // 4. 고정 메모리 핀 고정 (GCHandle) - C++이 연산하는 동안 C# 메모리가 움직이지 않도록 방어
-            // 메모리 누수 및 마샬링 예방
+            // GC 메모리 재배치로 인한 C++ 크래시 방어선 구축
             GCHandle handle = GCHandle.Alloc(rawImageData, GCHandleType.Pinned);
             IntPtr imagePtr = handle.AddrOfPinnedObject();
 
             try
             {
-                // 5. C++ OpenCV 함수 호출!
+                // C++ OpenCV 함수 호출
                 int detectedCount = VisionBridge.DetectWaferFaults(imagePtr, width, height, outXArray, outYArray, maxFaults);
 
-                // 6. C++이 리스트에 적어준 좌표를 수거해서 UI 리스트에 등록
+                //  C++ 리스트를 가공하여 FaultList 컬렉션에 적재
                 for (int i = 0; i < detectedCount; i++)
                 {
                     FaultList.Add(new FaultItem { Index = i + 1, X = outXArray[i], Y = outYArray[i] });
                 }
 
-                StatusText = $"검사 완료! 총 {detectedCount}개의 결함이 발견되었습니다.";
+                ResultText = $"검사 완료! 총 {detectedCount}개의 결함 무게중심이 무사히 수거되었습니다.";
+                StatusText = "엔진 상태 코드: SUCCESS (OpenCV 정상 반환)";
             }
             catch (Exception ex)
             {
-                StatusText = $"비전 코어 호출 오류: {ex.Message}";
+                ResultText = "비전 코어 호출 중 심각한 에러가 발생했습니다.";
+                StatusText = $"에러 메시지: {ex.Message}";
             }
             finally
             {
-                // 7. 사용한 메모리 핀 해제 (메모리 누수 차단)
+                // 메모리 고정 해제 (누수 방지)
                 handle.Free();
             }
         }
 
-        // MVVM 패턴의 기본 베이스 구현
         public event PropertyChangedEventHandler PropertyChanged;
         protected void OnPropertyChanged([CallerMemberName] string name = null)
         {
@@ -101,7 +103,6 @@ namespace WaferSimulator.UI.ViewModels
         }
     }
 
-    // WPF 버튼 명령 처리를 위한 단순한 헬퍼 클래스
     public class RelayCommand : ICommand
     {
         private readonly Action _execute;

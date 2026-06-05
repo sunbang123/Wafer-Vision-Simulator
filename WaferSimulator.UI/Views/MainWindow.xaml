@@ -5,7 +5,12 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WaferSimulator.UI"
         mc:Ignorable="d"
+        xmlns:vm="clr-namespace:WaferSimulator.UI.ViewModels"
         Title="MainWindow" Height="450" Width="800">
+
+    <Window.DataContext>
+        <vm:MainViewModel />
+    </Window.DataContext>
     
     <Grid Margin="20">
         <StackPanel VerticalAlignment="Center">
@@ -15,14 +20,31 @@
                 <TextBlock Text="가상 웨이퍼 입력 스펙: 500 x 500 (8-bit Gray)" FontSize="12" Foreground="#7F8C8D" HorizontalAlignment="Center" Margin="0,0,0,25"/>
                 <Button x:Name="BtnCalculate" Content="OpenCV 비전 엔진 가동" Width="200" Height="40" Margin="0,0,0,25" 
                     Background="#2E7D32" Foreground="White" FontWeight="Bold" FontSize="14"
-                    Click="BtnCalculate_Click" Cursor="Hand"/>
+                    Command="{Binding StartInspectionCommand}" Cursor="Hand"/>                     
             </StackPanel>
 
             <Border BorderBrush="#DDDDDD" BorderThickness="1" CornerRadius="5" Padding="15" Background="#FAFAFA">
                 <StackPanel>
-                    <TextBlock x:Name="TxtSumResult" Text="[검사 결과] 버튼을 누르면 OpenCV 레이블링 연산이 시작됩니다." FontSize="13" Margin="0,0,0,12" Foreground="#34495E" LineHeight="20"/>
+                    <TextBlock Text="{Binding ResultText}" FontSize="13" Margin="0,0,0,12" Foreground="#333333" FontWeight="Bold" LineHeight="20"/>
+                    
+                    <ItemsControl ItemsSource="{Binding FaultList}" Margin="0,0,0,10">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock FontSize="13" Foreground="#555555" Margin="5,2,0,2">
+                                    <TextBlock.Text>
+                                        <MultiBinding StringFormat="▶ [결함 {0}] 좌표: ({1}, {2})">
+                                            <Binding Path="Index"/>
+                                            <Binding Path="X"/>
+                                            <Binding Path="Y"/>
+                                        </MultiBinding>
+                                    </TextBlock.Text>
+                                </TextBlock>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    
                     <Separator Background="#ECF0F1" Margin="0,0,0,5"/>
-                    <TextBlock x:Name="TxtStatusResult" Text="엔진 상태 코드: IDLE" FontSize="12" FontWeight="SemiBold" Foreground="#7F8C8D"/>
+                    <TextBlock Text="{Binding StatusText}" FontSize="12" FontWeight="SemiBold" Foreground="#666666"/>
                 </StackPanel>
             </Border>
         </StackPanel>
