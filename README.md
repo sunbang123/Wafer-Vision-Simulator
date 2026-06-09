@@ -1,32 +1,50 @@
-### 🎯 웨이퍼 결함 탐지 및 모니터링 시뮬레이터
+# 웨이퍼 결함 탐지 및 모니터링 시뮬레이터
 
-**1. 프로젝트 개요**
+가상의 반도체 웨이퍼 이미지를 생성하고, C++ OpenCV 비전 코어로 결함 좌표를 검출한 뒤 C# WPF 대시보드에 표시하는 시뮬레이터입니다.
 
-* **목적:** 가상의 반도체 웨이퍼 이미지를 불러와, 불량 픽셀(결함)을 찾아내고 그 위치를 UI에 실시간으로 표시하는 소프트웨어.
-* **기술 스택:** * **UI 및 제어:** C#, WPF (MVVM 패턴 적용)
-* **핵심 비전 로직:** C++, OpenCV
+## 구성
 
+- `WaferVisionSimulator`: 1단계 검증용 C++ 콘솔 프로그램
+- `WaferSimulator.Core`: C#에서 호출하는 C++ OpenCV DLL
+- `WaferSimulator.UI`: WPF MVVM 대시보드
 
+## 핵심 흐름
 
-**2. 핵심 구현 기능 (회사가 좋아하는 포인트)**
+1. WPF ViewModel이 500 x 500 Gray8 가상 웨이퍼 데이터를 생성합니다.
+2. `VisionBridge`가 `WaferSimulator.Core.dll`의 `DetectWaferFaults`를 P/Invoke로 호출합니다.
+3. C++ 코어가 Gaussian blur, threshold, connected component labeling으로 결함 중심 좌표를 계산합니다.
+4. C++ 코어가 결함 중심점 맵의 integral image를 만들어 ROI 내부 결함 수를 빠르게 카운트합니다.
+5. WPF 화면이 웨이퍼 맵, ROI, 결함 마커, 좌표 리스트를 바인딩으로 갱신합니다.
 
-* **WPF 기반의 대시보드 UI (C#):**
-* 단순히 버튼만 있는 화면이 아니라, 장비 조작 패널처럼 구성합니다.
-* MVVM(Model-View-ViewModel) 패턴을 철저히 지켜서 UI와 비즈니스 로직을 완벽히 분리
+## 빌드
 
+Visual Studio 2022와 OpenCV가 아래 경로에 설치되어 있다고 가정합니다.
 
-* **비전 검사 코어 알고리즘 (C++ & OpenCV):**
-* 웨이퍼 이미지(가상의 흑백 혹은 컬러 패턴 이미지)를 로드합니다.
-* OpenCV를 활용해 이미지의 노이즈를 제거하고(블러링), 엣지를 추출하여 정상 패턴과 다른 '결함(스크래치나 먼지)'을 찾아냅니다.
-* '구간 합'이나 '탐색' 알고리즘 개념을 적용해, 특정 구역(ROI, Region of Interest) 내의 결함 개수를 빠르게 카운트하는 로직을 C++로 구현합니다.
+```powershell
+C:\OpenCV\build\install
+```
 
+솔루션 빌드:
 
-* **C++과 C#의 연동 (Interop / DLL):**
-* 무겁고 빠른 이미지 처리는 C++(DLL)이 담당하고, 그 결과 데이터(결함 좌표, 처리된 이미지)를 C#으로 넘겨받아 WPF 화면에 띄우는 구조를 만듭니다.
+```powershell
+msbuild WaferVisionSimulator\WaferVisionSimulator.sln /p:Configuration=Debug /p:Platform=x64
+```
 
+콘솔 검증 실행:
 
+```powershell
+WaferVisionSimulator\x64\Debug\WaferVisionSimulator.exe
+```
 
-**3. 프로젝트 진행 및 기록 방법**
+WPF 실행:
 
-* **작게 시작하기:** 1단계로 검은색 배경에 흰색 점(결함)이 몇 개 찍힌 단순한 이미지를 OpenCV로 읽어서 개수를 세고 좌표를 찾는 C++ 콘솔 프로그램부터 만듭니다.
-* **트러블슈팅 기록:** MVVM 패턴을 처음 적용하면서 겪는 데이터 바인딩 오류나, C++과 C# 간의 데이터 변환(Marshaling) 과정에서 발생하는 메모리 누수 등의 트러블슈팅 과정은 평소처럼 노션(Notion) 데이터베이스에 차곡차곡 기록
+```powershell
+WaferSimulator.UI\bin\Debug\net8.0-windows\WaferSimulator.UI.exe
+```
+
+## 현재 구현 상태
+
+- C++ 콘솔에서 단순 웨이퍼 이미지의 결함 개수와 좌표 출력
+- C++ DLL에서 결함 좌표 배열과 ROI 결함 수 반환
+- C# P/Invoke marshaling 및 pinned byte buffer 사용
+- WPF MVVM 기반 대시보드 UI, 웨이퍼 이미지, ROI, 결함 마커, 좌표 리스트 표시
