@@ -70,10 +70,10 @@ namespace
     {
         cv::Mat result = gray.clone();
 
-        // TODO: implement erosion.
-        // Hint: create a structuring element with cv::getStructuringElement,
-        // then call cv::erode(gray, result, kernel, anchor, iterations).
-        // Try MORPH_RECT first, then compare MORPH_ELLIPSE for wafer-like shapes.
+        // TODO: 침식 알고리즘을 구현하세요.
+        // 힌트: cv::getStructuringElement로 구조 요소(kernel)를 만든 뒤,
+        // cv::erode(gray, result, kernel, anchor, iterations)를 호출해보세요.
+        // 먼저 MORPH_RECT를 써보고, 웨이퍼처럼 둥근 형태에는 MORPH_ELLIPSE도 비교해보세요.
 
         return result;
     }
@@ -82,9 +82,9 @@ namespace
     {
         cv::Mat result = gray.clone();
 
-        // TODO: implement dilation.
-        // Hint: create a kernel, then call cv::dilate.
-        // Dilation can thicken bright defect regions or connect broken scratch edges.
+        // TODO: 팽창 알고리즘을 구현하세요.
+        // 힌트: kernel을 만든 뒤 cv::dilate를 호출해보세요.
+        // 팽창은 밝은 결함 영역을 두껍게 하거나 끊어진 스크래치 경계를 이어볼 때 유용합니다.
 
         return result;
     }
@@ -93,9 +93,9 @@ namespace
     {
         cv::Mat result = gray.clone();
 
-        // TODO: implement histogram processing.
-        // Hint: start with cv::equalizeHist(gray, result).
-        // For local contrast control, try cv::createCLAHE and compare it with global equalization.
+        // TODO: 히스토그램 기반 처리를 구현하세요.
+        // 힌트: cv::equalizeHist(gray, result)부터 시작해보세요.
+        // 부분 대비를 조절하고 싶다면 cv::createCLAHE를 써서 전체 평활화와 비교해보세요.
 
         return result;
     }
@@ -104,9 +104,9 @@ namespace
     {
         cv::Mat result = gray.clone();
 
-        // TODO: implement Gaussian blur.
-        // Hint: call cv::GaussianBlur(gray, result, cv::Size(odd, odd), sigma).
-        // Kernel width/height must be odd numbers such as 3, 5, 7, or 9.
+        // TODO: 가우시안 블러를 구현하세요.
+        // 힌트: cv::GaussianBlur(gray, result, cv::Size(odd, odd), sigma)를 호출해보세요.
+        // 커널의 가로/세로 크기는 3, 5, 7, 9처럼 홀수여야 합니다.
 
         return result;
     }
@@ -115,10 +115,10 @@ namespace
     {
         cv::Mat result = gray.clone();
 
-        // TODO: implement Laplacian edge extraction.
-        // Hint: use a temporary CV_16S matrix for cv::Laplacian,
-        // then convert it back with cv::convertScaleAbs.
-        // Compare kernel sizes 1, 3, and 5.
+        // TODO: 라플라시안 엣지 추출을 구현하세요.
+        // 힌트: cv::Laplacian 결과를 임시 CV_16S Mat에 받은 뒤,
+        // cv::convertScaleAbs로 다시 8비트 이미지로 변환해보세요.
+        // 커널 크기 1, 3, 5를 비교해보면 엣지 강도 차이를 보기 좋습니다.
 
         return result;
     }
@@ -127,9 +127,9 @@ namespace
     {
         cv::Mat result = gray.clone();
 
-        // TODO: implement binary thresholding.
-        // Hint: compare fixed threshold, Otsu threshold, and cv::adaptiveThreshold.
-        // A binary result can later be passed to connectedComponentsWithStats for coordinates.
+        // TODO: 이진화를 구현하세요.
+        // 힌트: 고정 임계값, Otsu 임계값, cv::adaptiveThreshold를 비교해보세요.
+        // 이진화 결과는 나중에 connectedComponentsWithStats에 넘겨 좌표를 뽑을 수 있습니다.
 
         return result;
     }
@@ -138,10 +138,10 @@ namespace
     {
         cv::Mat result = gray.clone();
 
-        // TODO: implement template matching.
-        // Hint: prepare a template cv::Mat, call cv::matchTemplate,
-        // then use cv::minMaxLoc or threshold the score map to find matches.
-        // Later, expose a template image path from C# or cache known templates here.
+        // TODO: 템플릿 매칭을 구현하세요.
+        // 힌트: 비교할 template cv::Mat을 준비한 뒤 cv::matchTemplate을 호출해보세요.
+        // 이후 cv::minMaxLoc를 쓰거나 score map을 임계값 처리해서 매칭 위치를 찾을 수 있습니다.
+        // 나중에는 C#에서 템플릿 이미지 경로를 넘기거나, C++ 코어 내부에 템플릿을 캐시해볼 수 있습니다.
 
         return result;
     }
@@ -172,10 +172,10 @@ namespace
     {
         cv::Mat mask = cv::Mat::zeros(gray.size(), CV_8UC1);
 
-        // TODO: implement wafer-area masking for auto detection.
-        // Hint: start with thresholding to separate the wafer from the dark background.
-        // Then use morphology close/open to remove tiny holes or isolated background noise.
-        // Example direction:
+        // TODO: 자동 탐지용 웨이퍼 영역 마스크를 구현하세요.
+        // 힌트: 먼저 이진화로 어두운 배경과 웨이퍼를 분리해보세요.
+        // 그 다음 morphology close/open으로 작은 구멍이나 고립된 배경 노이즈를 정리해보세요.
+        // 예시 흐름:
         //   1. cv::threshold(gray, mask, value, 255, cv::THRESH_BINARY)
         //   2. cv::morphologyEx(mask, mask, cv::MORPH_CLOSE, kernel)
         //   3. cv::morphologyEx(mask, mask, cv::MORPH_OPEN, kernel)
@@ -187,21 +187,21 @@ namespace
     {
         cv::Mat defectMask = cv::Mat::zeros(gray.size(), CV_8UC1);
 
-        // TODO: implement automatic defect detection.
-        // Hint: this is where you can combine the individual algorithms.
-        // Suggested pipeline to experiment with:
-        //   1. Improve contrast with histogram equalization or CLAHE.
-        //   2. Suppress random noise with Gaussian blur.
-        //   3. Estimate background/pattern using a larger blur or morphology.
-        //   4. Compare original vs background with cv::absdiff.
-        //   5. Convert the residual to binary using threshold or adaptiveThreshold.
-        //   6. Optionally add edge defects using Laplacian or Canny.
-        //   7. Limit detections to waferMask with cv::bitwise_and.
-        //   8. Clean the mask with erosion/dilation/open/close.
+        // TODO: 자동 결함 탐지 알고리즘을 구현하세요.
+        // 힌트: 여기에서 개별 알고리즘들을 조합할 수 있습니다.
+        // 실험해볼 만한 파이프라인:
+        //   1. 히스토그램 평활화나 CLAHE로 대비를 개선합니다.
+        //   2. 가우시안 블러로 무작위 노이즈를 줄입니다.
+        //   3. 큰 블러나 morphology로 배경/패턴을 추정합니다.
+        //   4. cv::absdiff로 원본과 배경 추정 이미지를 비교합니다.
+        //   5. threshold나 adaptiveThreshold로 차이 이미지를 이진화합니다.
+        //   6. 필요하면 Laplacian이나 Canny로 엣지성 결함을 추가합니다.
+        //   7. cv::bitwise_and로 waferMask 내부 후보만 남깁니다.
+        //   8. 침식/팽창/open/close로 마스크를 정리합니다.
         //
-        // Return a CV_8UC1 binary mask:
-        //   0   = normal area
-        //   255 = defect candidate
+        // CV_8UC1 이진 마스크를 반환하세요:
+        //   0   = 정상 영역
+        //   255 = 결함 후보
         (void)waferMask;
 
         return defectMask;
