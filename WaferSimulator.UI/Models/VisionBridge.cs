@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Runtime.InteropServices;
 
 namespace WaferSimulator.UI.Models
 {
-    public class VisionBridge
+    public static class VisionBridge
     {
         private const string DllName = "WaferSimulator.Core.dll";
 
@@ -12,9 +12,13 @@ namespace WaferSimulator.UI.Models
             IntPtr imageData,
             int width,
             int height,
-            int[] outXArray,
-            int[] outYArray,
-            int maxFaults
-        );
+            [Out] int[] outXArray,
+            [Out] int[] outYArray,
+            int maxFaults,
+            int roiX,
+            int roiY,
+            int roiWidth,
+            int roiHeight,
+            out int outRoiFaultCount);
     }
 }
