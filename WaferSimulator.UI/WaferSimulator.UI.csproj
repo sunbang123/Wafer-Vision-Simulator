@@ -8,12 +8,16 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
+    <PlatformTarget>x64</PlatformTarget>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="..\WaferVisionSimulator\x64\Debug\WaferSimulator.Core.dll" Link="WaferSimulator.Core.dll">
+    <Content Include="..\WaferVisionSimulator\x64\$(Configuration)\WaferSimulator.Core.dll"
+             Link="WaferSimulator.Core.dll"
+             Condition="Exists('..\WaferVisionSimulator\x64\$(Configuration)\WaferSimulator.Core.dll')">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    </Content>
   </ItemGroup>
 
 </Project>

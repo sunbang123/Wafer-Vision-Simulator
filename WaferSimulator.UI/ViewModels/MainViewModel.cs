@@ -25,12 +25,14 @@ namespace WaferSimulator.UI.ViewModels
 
     public class FaultItem
     {
-        public int Index { get; set; }
-        public int X { get; set; }
-        public int Y { get; set; }
+        public int Index { get; init; }
+        public int X { get; init; }
+        public int Y { get; init; }
+        public double MarkerLeft => X - 5;
+        public double MarkerTop => Y - 5;
     }
 
-    public class MainViewModel : INotifyPropertyChanged
+    public sealed class MainViewModel : INotifyPropertyChanged
     {
         private const int DefaultWidth = 500;
         private const int DefaultHeight = 500;
@@ -53,13 +55,13 @@ namespace WaferSimulator.UI.ViewModels
         public string StatusText
         {
             get => _statusText;
-            set { _statusText = value; OnPropertyChanged(); }
+            private set { _statusText = value; OnPropertyChanged(); }
         }
 
         public string ResultText
         {
             get => _resultText;
-            set { _resultText = value; OnPropertyChanged(); }
+            private set { _resultText = value; OnPropertyChanged(); }
         }
 
         public string ImageSpecText
@@ -94,8 +96,8 @@ namespace WaferSimulator.UI.ViewModels
 
         public ObservableCollection<FaultItem> FaultList
         {
-            get => _faultList;
-            set { _faultList = value; OnPropertyChanged(); }
+            get => _roiText;
+            private set { _roiText = value; OnPropertyChanged(); }
         }
 
         public ICommand LoadImageCommand { get; }
@@ -346,7 +348,7 @@ namespace WaferSimulator.UI.ViewModels
         }
     }
 
-    public class RelayCommand : ICommand
+    public sealed class RelayCommand : ICommand
     {
         private readonly Action<object?> _execute;
 
