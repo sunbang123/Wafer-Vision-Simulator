@@ -74,6 +74,10 @@ namespace
         // 힌트: cv::getStructuringElement로 구조 요소(kernel)를 만든 뒤,
         // cv::erode(gray, result, kernel, anchor, iterations)를 호출해보세요.
         // 먼저 MORPH_RECT를 써보고, 웨이퍼처럼 둥근 형태에는 MORPH_ELLIPSE도 비교해보세요.
+		cv::Mat kernel = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(3, 3));
+		cv::Point anchor = cv::Point(-1, -1); // 기본값은 커널 중심입니다.
+		int iterations = 1; // 침식 반복 횟수입니다. 1로 시작해서 필요하면 늘려보세요.
+        cv::erode(gray, result, kernel, anchor, iterations);
 
         return result;
     }
@@ -85,6 +89,10 @@ namespace
         // TODO: 팽창 알고리즘을 구현하세요.
         // 힌트: kernel을 만든 뒤 cv::dilate를 호출해보세요.
         // 팽창은 밝은 결함 영역을 두껍게 하거나 끊어진 스크래치 경계를 이어볼 때 유용합니다.
+		cv::Mat kernel = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(3, 3));
+		cv::Point anchor = cv::Point(-1, -1); // 기본값은 커널 중심입니다.
+		int iterations = 1; // 팽창 반복 횟수입니다. 1로 시작해서 필요하면 늘려보세요.
+		cv::dilate(gray, result, kernel, anchor, iterations);
 
         return result;
     }
