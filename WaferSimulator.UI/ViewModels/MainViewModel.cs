@@ -201,6 +201,25 @@ namespace WaferSimulator.UI.ViewModels
                     pixels[offset + 2] = 255;
                     pixels[offset + 3] = 255;
                 }
+
+                for (int i = 0; i < detectedCount; i++) {
+                    FaultList.Add(new FaultItem { Index = i + 1, X = outXArray[i], Y = outYArray[i] });
+                }
+
+                ProcessedImage = CreateBitmap(processedPixels, _imageWidth, _imageHeight);
+                _inspectionCount++;
+
+                ResultText = detectedCount > 0
+                    ? $"{GetAlgorithmDisplayName(algorithm)} 완료. 후보 좌표 {detectedCount}개를 표시했습니다."
+                    : $"{GetAlgorithmDisplayName(algorithm)} 완료. 이 모드는 처리 이미지 확인 중심입니다.";
+
+                StatusText = _isMonitoring
+                    ? $"반복 모니터링 실행 중... {_inspectionCount}회 처리 완료"
+                    : "엔진 상태 코드: SUCCESS";
+            }
+            catch (Exception ex) {
+                ResultText = "비전 코어 호출 중 오류가 발생했습니다.";
+                StatusText = ex.Message;
             }
         }
 
@@ -225,6 +244,12 @@ namespace WaferSimulator.UI.ViewModels
             if (parameter is string algorithmName && Enum.TryParse(algorithmName, out WaferAlgorithmType algorithm)) {
                 ExecuteAlgorithm(algorithm);
             }
+
+            _inspectionCount = 0;
+            _isMonitoring = true;
+            MonitoringButtonText = "반복 모니터링 중지";
+            ExecuteAlgorithm(_selectedAlgorithm);
+            _monitoringTimer.Start();
         }
 
         private void ExecuteAlgorithm(WaferAlgorithmType algorithm)
