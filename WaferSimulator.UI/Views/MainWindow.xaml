@@ -27,6 +27,27 @@
                 <TextBlock Text="{Binding ImageSpecText}" FontSize="12" Foreground="#697386" Margin="0,4,0,0"/>
                 <TextBlock Text="{Binding SelectedAlgorithmText}" FontSize="12" Foreground="#2563EB" Margin="0,4,0,0"/>
             </StackPanel>
+            <Border DockPanel.Dock="Right"
+                    Background="#102A1F"
+                    BorderBrush="#2C7A4B"
+                    BorderThickness="1"
+                    CornerRadius="5"
+                    Padding="12,8"
+                    VerticalAlignment="Center">
+                <TextBlock Text="{Binding StatusText}"
+                           Foreground="#7EE0A1"
+                           FontWeight="SemiBold" />
+            </Border>
+        </DockPanel>
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="320" />
+                <ColumnDefinition Width="18" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="18" />
+                <ColumnDefinition Width="310" />
+            </Grid.ColumnDefinitions>
 
             <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" HorizontalAlignment="Right">
                 <Button Content="이미지 로드" Width="120" Height="36" Margin="0,0,8,0"
