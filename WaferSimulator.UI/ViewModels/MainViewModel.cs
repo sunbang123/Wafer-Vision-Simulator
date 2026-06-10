@@ -96,8 +96,8 @@ namespace WaferSimulator.UI.ViewModels
 
         public ObservableCollection<FaultItem> FaultList
         {
-            get => _roiText;
-            private set { _roiText = value; OnPropertyChanged(); }
+            get => _faultList;
+            private set { _faultList = value; OnPropertyChanged(); }
         }
 
         public ICommand LoadImageCommand { get; }
@@ -342,7 +342,7 @@ namespace WaferSimulator.UI.ViewModels
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
-        protected void OnPropertyChanged([CallerMemberName] string? name = null)
+        private void OnPropertyChanged([CallerMemberName] string? name = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }
