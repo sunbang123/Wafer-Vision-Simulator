@@ -1,15 +1,16 @@
-﻿using System;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace WaferSimulator.UI.Models
 {
-    public class VisionBridge
+    public static partial class VisionBridge
     {
         private const string DllName = "WaferSimulator.Core.dll";
 
-        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int DetectWaferFaults(
-            IntPtr imageData,
+        [LibraryImport(DllName, EntryPoint = "DetectWaferFaults")]
+        [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+        public static partial int DetectWaferFaults(
+            byte[] imageData,
             int width,
             int height,
             int[] outXArray,
@@ -17,22 +18,24 @@ namespace WaferSimulator.UI.Models
             int maxFaults
         );
 
-        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int DetectWaferFaultsAdvanced(
-            IntPtr imageData,
+        [LibraryImport(DllName, EntryPoint = "DetectWaferFaultsAdvanced")]
+        [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+        public static partial int DetectWaferFaultsAdvanced(
+            byte[] imageData,
             int width,
             int height,
             int channels,
             int[] outXArray,
             int[] outYArray,
             int maxFaults,
-            IntPtr processedImageData,
+            byte[]? processedImageData,
             int processedBufferLength
         );
 
-        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int ProcessWaferAlgorithm(
-            IntPtr imageData,
+        [LibraryImport(DllName, EntryPoint = "ProcessWaferAlgorithm")]
+        [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+        public static partial int ProcessWaferAlgorithm(
+            byte[] imageData,
             int width,
             int height,
             int channels,
@@ -40,7 +43,7 @@ namespace WaferSimulator.UI.Models
             int[] outXArray,
             int[] outYArray,
             int maxFaults,
-            IntPtr processedImageData,
+            byte[] processedImageData,
             int processedBufferLength
         );
     }

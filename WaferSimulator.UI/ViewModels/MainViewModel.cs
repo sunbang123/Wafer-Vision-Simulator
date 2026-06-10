@@ -2,7 +2,6 @@ using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -232,6 +231,13 @@ namespace WaferSimulator.UI.ViewModels
                 LoadSampleWafer();
             }
 
+            byte[]? inputPixels = _inputPixels;
+            if (inputPixels == null) {
+                ResultText = "입력 이미지가 준비되지 않았습니다.";
+                StatusText = "엔진 상태 코드: NO_INPUT";
+                return;
+            }
+
             _selectedAlgorithm = algorithm;
             SelectedAlgorithmText = $"선택 알고리즘: {GetAlgorithmDisplayName(algorithm)}";
             StatusText = $"{GetAlgorithmDisplayName(algorithm)} 처리 중...";
@@ -243,12 +249,9 @@ namespace WaferSimulator.UI.ViewModels
             int[] outYArray = new int[maxFaults];
             byte[] processedPixels = new byte[_imageWidth * _imageHeight * 4];
 
-            GCHandle inputHandle = GCHandle.Alloc(_inputPixels!, GCHandleType.Pinned);
-            GCHandle outputHandle = GCHandle.Alloc(processedPixels, GCHandleType.Pinned);
-
             try {
                 int detectedCount = VisionBridge.ProcessWaferAlgorithm(
-                    inputHandle.AddrOfPinnedObject(),
+                    inputPixels,
                     _imageWidth,
                     _imageHeight,
                     4,
@@ -256,7 +259,7 @@ namespace WaferSimulator.UI.ViewModels
                     outXArray,
                     outYArray,
                     maxFaults,
-                    outputHandle.AddrOfPinnedObject(),
+                    processedPixels,
                     processedPixels.Length);
 
                 if (detectedCount < 0) {
@@ -283,10 +286,6 @@ namespace WaferSimulator.UI.ViewModels
             catch (Exception ex) {
                 ResultText = "비전 코어 호출 중 오류가 발생했습니다.";
                 StatusText = ex.Message;
-            }
-            finally {
-                inputHandle.Free();
-                outputHandle.Free();
             }
         }
 
