@@ -2,7 +2,6 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Windows.Input;
 using WaferSimulator.UI.Models;
 
@@ -66,14 +65,10 @@ namespace WaferSimulator.UI.ViewModels
             int[] outXArray = new int[maxFaults];
             int[] outYArray = new int[maxFaults];
 
-            // GC 메모리 재배치로 인한 C++ 크래시 방어선 구축
-            GCHandle handle = GCHandle.Alloc(rawImageData, GCHandleType.Pinned);
-            IntPtr imagePtr = handle.AddrOfPinnedObject();
-
             try
             {
                 // C++ OpenCV 함수 호출
-                int detectedCount = VisionBridge.DetectWaferFaults(imagePtr, width, height, outXArray, outYArray, maxFaults);
+                int detectedCount = VisionBridge.DetectWaferFaults(rawImageData, width, height, outXArray, outYArray, maxFaults);
 
                 //  C++ 리스트를 가공하여 FaultList 컬렉션에 적재
                 for (int i = 0; i < detectedCount; i++)
@@ -89,15 +84,10 @@ namespace WaferSimulator.UI.ViewModels
                 ResultText = "비전 코어 호출 중 심각한 에러가 발생했습니다.";
                 StatusText = $"에러 메시지: {ex.Message}";
             }
-            finally
-            {
-                // 메모리 고정 해제 (누수 방지)
-                handle.Free();
-            }
         }
 
-        public event PropertyChangedEventHandler PropertyChanged;
-        protected void OnPropertyChanged([CallerMemberName] string name = null)
+        public event PropertyChangedEventHandler? PropertyChanged;
+        protected void OnPropertyChanged([CallerMemberName] string? name = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }
@@ -107,8 +97,8 @@ namespace WaferSimulator.UI.ViewModels
     {
         private readonly Action _execute;
         public RelayCommand(Action execute) => _execute = execute;
-        public bool CanExecute(object parameter) => true;
-        public void Execute(object parameter) => _execute();
-        public event EventHandler CanExecuteChanged { add { } remove { } }
+        public bool CanExecute(object? parameter) => true;
+        public void Execute(object? parameter) => _execute();
+        public event EventHandler? CanExecuteChanged { add { } remove { } }
     }
 }

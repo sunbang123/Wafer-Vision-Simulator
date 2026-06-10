@@ -1,20 +1,19 @@
-﻿using System;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-namespace WaferSimulator.UI.Models
-{
-    public class VisionBridge
-    {
-        private const string DllName = "WaferSimulator.Core.dll";
+namespace WaferSimulator.UI.Models;
 
-        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int DetectWaferFaults(
-            IntPtr imageData,
-            int width,
-            int height,
-            int[] outXArray,
-            int[] outYArray,
-            int maxFaults
-        );
-    }
+public static partial class VisionBridge
+{
+    private const string DllName = "WaferSimulator.Core.dll";
+
+    [LibraryImport(DllName, EntryPoint = "DetectWaferFaults")]
+    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    public static partial int DetectWaferFaults(
+        [In] byte[] imageData,
+        int width,
+        int height,
+        [Out] int[] outXArray,
+        [Out] int[] outYArray,
+        int maxFaults);
 }
