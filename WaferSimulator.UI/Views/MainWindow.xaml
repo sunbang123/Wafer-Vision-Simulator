@@ -1,54 +1,31 @@
 <Window x:Class="WaferSimulator.UI.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="clr-namespace:WaferSimulator.UI.ViewModels"
-        Title="Wafer Vision Simulator"
-        Width="1120"
-        Height="720"
-        MinWidth="960"
-        MinHeight="620"
-        Background="#101418">
+        mc:Ignorable="d"
+        Title="Wafer Vision Simulator" Height="760" Width="1180"
+        MinHeight="660" MinWidth="980"
+        Background="#F4F6F8">
+
     <Window.DataContext>
         <vm:MainViewModel />
     </Window.DataContext>
 
-    <Window.Resources>
-        <Style x:Key="PanelBorder" TargetType="Border">
-            <Setter Property="Background" Value="#182026" />
-            <Setter Property="BorderBrush" Value="#2A343D" />
-            <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="CornerRadius" Value="6" />
-            <Setter Property="Padding" Value="18" />
-        </Style>
-        <Style x:Key="PanelTitle" TargetType="TextBlock">
-            <Setter Property="Foreground" Value="#DDE6ED" />
-            <Setter Property="FontSize" Value="15" />
-            <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="Margin" Value="0,0,0,12" />
-        </Style>
-        <Style x:Key="MetricText" TargetType="TextBlock">
-            <Setter Property="Foreground" Value="#95A6B3" />
-            <Setter Property="FontSize" Value="13" />
-            <Setter Property="Margin" Value="0,2,0,2" />
-        </Style>
-    </Window.Resources>
-
-    <Grid Margin="22">
+    <Grid Margin="18">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="180"/>
         </Grid.RowDefinitions>
 
-        <DockPanel Grid.Row="0" Margin="0,0,0,18">
+        <DockPanel Grid.Row="0" Margin="0,0,0,12">
             <StackPanel DockPanel.Dock="Left">
-                <TextBlock Text="Wafer Vision Simulator"
-                           Foreground="#F2F6F8"
-                           FontSize="28"
-                           FontWeight="Bold" />
-                <TextBlock Text="C# WPF MVVM dashboard / C++ OpenCV inspection core"
-                           Foreground="#8796A2"
-                           FontSize="13"
-                           Margin="0,5,0,0" />
+                <TextBlock Text="Wafer Vision Simulator" FontSize="22" FontWeight="Bold" Foreground="#1F2933"/>
+                <TextBlock Text="{Binding ImageSpecText}" FontSize="12" Foreground="#697386" Margin="0,4,0,0"/>
+                <TextBlock Text="{Binding SelectedAlgorithmText}" FontSize="12" Foreground="#2563EB" Margin="0,4,0,0"/>
             </StackPanel>
             <Border DockPanel.Dock="Right"
                     Background="#102A1F"
@@ -72,123 +49,112 @@
                 <ColumnDefinition Width="310" />
             </Grid.ColumnDefinitions>
 
-            <Border Grid.Column="0" Style="{StaticResource PanelBorder}">
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Content="이미지 로드" Width="120" Height="36" Margin="0,0,8,0"
+                        Command="{Binding LoadImageCommand}" Cursor="Hand"/>
+                <Button Content="자동 탐지" Width="120" Height="36" Margin="0,0,8,0"
+                        Background="#2563EB" Foreground="White" FontWeight="SemiBold"
+                        Command="{Binding StartInspectionCommand}" Cursor="Hand"/>
+                <Button Content="{Binding MonitoringButtonText}" Width="160" Height="36"
+                        Background="#111827" Foreground="White" FontWeight="SemiBold"
+                        Command="{Binding ToggleMonitoringCommand}" Cursor="Hand"/>
+            </StackPanel>
+        </DockPanel>
+
+        <Border Grid.Row="1" BorderBrush="#D7DEE8" BorderThickness="1" Background="#FFFFFF" Padding="10" Margin="0,0,0,14">
+            <WrapPanel>
+                <TextBlock Text="OpenCV / 알고리즘 구현" FontSize="13" FontWeight="SemiBold" Foreground="#1F2933"
+                           VerticalAlignment="Center" Margin="0,0,12,0"/>
+                <Button Content="침식" Width="92" Height="32" Margin="0,0,8,8"
+                        Command="{Binding AlgorithmCommand}" CommandParameter="Erosion"/>
+                <Button Content="팽창" Width="92" Height="32" Margin="0,0,8,8"
+                        Command="{Binding AlgorithmCommand}" CommandParameter="Dilation"/>
+                <Button Content="히스토그램" Width="102" Height="32" Margin="0,0,8,8"
+                        Command="{Binding AlgorithmCommand}" CommandParameter="Histogram"/>
+                <Button Content="가우시안" Width="102" Height="32" Margin="0,0,8,8"
+                        Command="{Binding AlgorithmCommand}" CommandParameter="Gaussian"/>
+                <Button Content="라플라시안" Width="102" Height="32" Margin="0,0,8,8"
+                        Command="{Binding AlgorithmCommand}" CommandParameter="Laplacian"/>
+                <Button Content="이진화" Width="92" Height="32" Margin="0,0,8,8"
+                        Command="{Binding AlgorithmCommand}" CommandParameter="Threshold"/>
+                <Button Content="템플릿매칭" Width="116" Height="32" Margin="0,0,8,8"
+                        Command="{Binding AlgorithmCommand}" CommandParameter="TemplateMatching"/>
+            </WrapPanel>
+        </Border>
+
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="14"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <Border Grid.Column="0" BorderBrush="#D7DEE8" BorderThickness="1" Background="#FFFFFF" Padding="12">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Text="원본 이미지" FontSize="14" FontWeight="SemiBold" Foreground="#1F2933" Margin="0,0,0,10"/>
+                    <Border Grid.Row="1" Background="#0B1020">
+                        <Image Source="{Binding InputImage}" Stretch="Uniform" SnapsToDevicePixels="True"/>
+                    </Border>
+                </Grid>
+            </Border>
+
+            <Border Grid.Column="2" BorderBrush="#D7DEE8" BorderThickness="1" Background="#FFFFFF" Padding="12">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Text="처리 결과" FontSize="14" FontWeight="SemiBold" Foreground="#1F2933" Margin="0,0,0,10"/>
+                    <Border Grid.Row="1" Background="#0B1020">
+                        <Image Source="{Binding ProcessedImage}" Stretch="Uniform" SnapsToDevicePixels="True"/>
+                    </Border>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <Grid Grid.Row="3" Margin="0,14,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="2*"/>
+                <ColumnDefinition Width="14"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <Border Grid.Column="0" BorderBrush="#D7DEE8" BorderThickness="1" Background="#FFFFFF" Padding="12">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Text="{Binding ResultText}" FontSize="13" FontWeight="SemiBold" Foreground="#1F2933" Margin="0,0,0,8"/>
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                        <ItemsControl ItemsSource="{Binding FaultList}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock FontSize="13" Foreground="#374151" Margin="2,2,0,2">
+                                        <TextBlock.Text>
+                                            <MultiBinding StringFormat="[결함 {0}] 좌표: ({1}, {2})">
+                                                <Binding Path="Index"/>
+                                                <Binding Path="X"/>
+                                                <Binding Path="Y"/>
+                                            </MultiBinding>
+                                        </TextBlock.Text>
+                                    </TextBlock>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Grid>
+            </Border>
+
+            <Border Grid.Column="2" BorderBrush="#D7DEE8" BorderThickness="1" Background="#FFFFFF" Padding="12">
                 <StackPanel>
-                    <TextBlock Text="Control Panel" Style="{StaticResource PanelTitle}" />
-                    <Button Command="{Binding StartInspectionCommand}"
-                            Height="44"
-                            Background="#1F7A4D"
-                            BorderBrush="#3DA86E"
-                            Foreground="White"
-                            FontWeight="SemiBold"
-                            Cursor="Hand"
-                            Content="Start Inspection" />
-
-                    <Separator Margin="0,18" Background="#2A343D" />
-
-                    <TextBlock Text="Recipe" Style="{StaticResource PanelTitle}" />
-                    <TextBlock Text="Input: 500 x 500 Gray8" Style="{StaticResource MetricText}" />
-                    <TextBlock Text="Preprocess: Gaussian blur" Style="{StaticResource MetricText}" />
-                    <TextBlock Text="Detect: Threshold + labeling" Style="{StaticResource MetricText}" />
-                    <TextBlock Text="ROI Count: Integral point map" Style="{StaticResource MetricText}" />
-
-                    <Separator Margin="0,18" Background="#2A343D" />
-
-                    <TextBlock Text="Result" Style="{StaticResource PanelTitle}" />
-                    <TextBlock Text="{Binding ResultText}"
-                               Foreground="#DDE6ED"
-                               FontSize="14"
-                               TextWrapping="Wrap"
-                               LineHeight="20" />
-                    <TextBlock Text="{Binding RoiText}"
-                               Foreground="#F5C76B"
-                               FontSize="14"
-                               FontWeight="SemiBold"
-                               Margin="0,10,0,0" />
+                    <TextBlock Text="엔진 상태" FontSize="14" FontWeight="SemiBold" Foreground="#1F2933" Margin="0,0,0,10"/>
+                    <TextBlock Text="{Binding StatusText}" FontSize="12" Foreground="#4B5563" TextWrapping="Wrap" LineHeight="19"/>
                 </StackPanel>
-            </Border>
-
-            <Border Grid.Column="2" Style="{StaticResource PanelBorder}" Padding="16">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
-
-                    <TextBlock Text="Live Wafer Map" Style="{StaticResource PanelTitle}" />
-                    <Viewbox Grid.Row="1" Stretch="Uniform">
-                        <Canvas Width="{Binding CanvasWidth}"
-                                Height="{Binding CanvasHeight}"
-                                Background="#030506">
-                            <Image Source="{Binding WaferImage}"
-                                   Width="{Binding CanvasWidth}"
-                                   Height="{Binding CanvasHeight}"
-                                   Stretch="Fill" />
-                            <Rectangle Canvas.Left="{Binding RoiX}"
-                                       Canvas.Top="{Binding RoiY}"
-                                       Width="{Binding RoiWidth}"
-                                       Height="{Binding RoiHeight}"
-                                       Stroke="#F5C76B"
-                                       StrokeThickness="2"
-                                       StrokeDashArray="7 5"
-                                       Fill="#22F5C76B" />
-                            <ItemsControl ItemsSource="{Binding FaultList}">
-                                <ItemsControl.ItemsPanel>
-                                    <ItemsPanelTemplate>
-                                        <Canvas Width="{Binding CanvasWidth}" Height="{Binding CanvasHeight}" />
-                                    </ItemsPanelTemplate>
-                                </ItemsControl.ItemsPanel>
-                                <ItemsControl.ItemContainerStyle>
-                                    <Style TargetType="ContentPresenter">
-                                        <Setter Property="Canvas.Left" Value="{Binding MarkerLeft}" />
-                                        <Setter Property="Canvas.Top" Value="{Binding MarkerTop}" />
-                                    </Style>
-                                </ItemsControl.ItemContainerStyle>
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <Grid Width="36" Height="20">
-                                            <Ellipse Width="10"
-                                                     Height="10"
-                                                     Fill="#FF4B4B"
-                                                     Stroke="#FFFFFF"
-                                                     StrokeThickness="1"
-                                                     HorizontalAlignment="Left"
-                                                     VerticalAlignment="Top" />
-                                            <TextBlock Text="{Binding Index}"
-                                                       Foreground="#FFFFFF"
-                                                       FontSize="10"
-                                                       FontWeight="Bold"
-                                                       Margin="13,-2,0,0" />
-                                        </Grid>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                        </Canvas>
-                    </Viewbox>
-                </Grid>
-            </Border>
-
-            <Border Grid.Column="4" Style="{StaticResource PanelBorder}">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
-                    <TextBlock Text="Defect Coordinates" Style="{StaticResource PanelTitle}" />
-                    <ListView Grid.Row="1"
-                              ItemsSource="{Binding FaultList}"
-                              Background="#12191E"
-                              BorderBrush="#2A343D"
-                              Foreground="#DDE6ED">
-                        <ListView.View>
-                            <GridView>
-                                <GridViewColumn Header="#" DisplayMemberBinding="{Binding Index}" Width="42" />
-                                <GridViewColumn Header="X" DisplayMemberBinding="{Binding X}" Width="84" />
-                                <GridViewColumn Header="Y" DisplayMemberBinding="{Binding Y}" Width="84" />
-                            </GridView>
-                        </ListView.View>
-                    </ListView>
-                </Grid>
             </Border>
         </Grid>
     </Grid>
