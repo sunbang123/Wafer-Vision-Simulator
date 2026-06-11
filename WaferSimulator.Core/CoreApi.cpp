@@ -138,6 +138,52 @@ namespace
         // TODO: 이진화를 구현하세요.
         // 힌트: 고정 임계값, Otsu 임계값, cv::adaptiveThreshold를 비교해보세요.
         // 이진화 결과는 나중에 connectedComponentsWithStats에 넘겨 좌표를 뽑을 수 있습니다.
+        
+		//// 예시: 고정 임계값
+		double threshValue = 128; // 임계값을 0-255 사이에서 조절해보세요.
+		double maxValue = 255; // 임계값을 넘는 픽셀에 할당할 값입니다.
+		cv::threshold(gray, result, threshValue, maxValue, cv::THRESH_BINARY);
+
+		// 예시: Otsu 임계값(결함탐지)
+        //cv::Mat blur;
+        //cv::GaussianBlur(gray, blur, cv::Size(31, 31), 0);
+
+        //cv::Mat diff;
+        //cv::absdiff(gray, blur, diff);
+
+        //cv::threshold(diff, result, 0, 255, cv::THRESH_BINARY | cv::THRESH_OTSU);
+
+		// 예시: Otsu 임계값(엣지 결함용)
+        //cv::Mat lap16;
+        //cv::Mat lap;
+        //cv::Laplacian(gray, lap16, CV_16S, 3);
+        //cv::convertScaleAbs(lap16, lap);
+
+        //cv::threshold(lap, result, 0, 255, cv::THRESH_BINARY | cv::THRESH_OTSU);
+
+		 // 예시: 적응형 임계값
+		 //int blockSize = 11; // 임계값 계산에 사용할 블록 크기입니다. 홀수여야 합니다.
+		 //double C = 2; // 계산된 임계값에서 빼는 상수입니다. 조절해보세요.
+		 //cv::adaptiveThreshold(gray, result, maxValue, cv::ADAPTIVE_THRESH_MEAN_C,
+   //          cv::THRESH_BINARY, blockSize, C);
+
+		//// 예시: 삼각형 방법
+        //// 1. 큰 블러로 웨이퍼의 완만한 배경/패턴 흐름을 추정
+        //cv::Mat background;
+        //cv::GaussianBlur(gray, background, cv::Size(31, 31), 0);
+
+        //// 2. 원본과 배경 추정 이미지의 차이 계산
+        //cv::Mat diff;
+        //cv::absdiff(gray, background, diff);
+
+        //// 3. 차이가 큰 부분을 Triangle 방법으로 자동 이진화
+        //cv::threshold(
+        //    diff,
+        //    result,
+        //    0,
+        //    maxValue,
+        //    cv::THRESH_BINARY | cv::THRESH_TRIANGLE
+        //);
 
         return result;
     }
