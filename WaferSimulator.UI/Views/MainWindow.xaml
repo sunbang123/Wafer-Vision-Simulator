@@ -31,7 +31,7 @@
             <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
                 <Button Content="이미지 로드" Width="120" Height="36" Margin="0,0,8,0"
                         Command="{Binding LoadImageCommand}" Cursor="Hand"/>
-                <Button Content="자동 탐지" Width="120" Height="36" Margin="0,0,8,0"
+                <Button Content="자동 검사" Width="120" Height="36" Margin="0,0,8,0"
                         Background="#2563EB" Foreground="White" FontWeight="SemiBold"
                         Command="{Binding StartInspectionCommand}" Cursor="Hand"/>
                 <Button Content="{Binding MonitoringButtonText}" Width="160" Height="36"
@@ -55,7 +55,7 @@
 
         <Border Grid.Row="1" BorderBrush="#D7DEE8" BorderThickness="1" Background="#FFFFFF" Padding="10" Margin="0,0,0,14">
             <WrapPanel>
-                <TextBlock Text="OpenCV / 알고리즘 구현" FontSize="13" FontWeight="SemiBold" Foreground="#1F2933"
+                <TextBlock Text="OpenCV 알고리즘" FontSize="13" FontWeight="SemiBold" Foreground="#1F2933"
                            VerticalAlignment="Center" Margin="0,0,12,0"/>
                 <Button Content="침식" Width="92" Height="32" Margin="0,0,8,8"
                         Command="{Binding AlgorithmCommand}" CommandParameter="Erosion"/>
@@ -69,7 +69,7 @@
                         Command="{Binding AlgorithmCommand}" CommandParameter="Laplacian"/>
                 <Button Content="이진화" Width="92" Height="32" Margin="0,0,8,8"
                         Command="{Binding AlgorithmCommand}" CommandParameter="Threshold"/>
-                <Button Content="템플릿매칭" Width="116" Height="32" Margin="0,0,8,8"
+                <Button Content="템플릿 매칭" Width="116" Height="32" Margin="0,0,8,8"
                         Command="{Binding AlgorithmCommand}" CommandParameter="TemplateMatching"/>
             </WrapPanel>
         </Border>
@@ -144,7 +144,7 @@
 
             <Border Grid.Column="2" BorderBrush="#D7DEE8" BorderThickness="1" Background="#FFFFFF" Padding="12">
                 <StackPanel>
-                    <TextBlock Text="엔진 상태" FontSize="14" FontWeight="SemiBold" Foreground="#1F2933" Margin="0,0,0,10"/>
+                    <TextBlock Text="검사 상태" FontSize="14" FontWeight="SemiBold" Foreground="#1F2933" Margin="0,0,0,10"/>
                     <TextBlock Text="{Binding StatusText}" FontSize="12" Foreground="#4B5563" TextWrapping="Wrap" LineHeight="19"/>
                 </StackPanel>
             </Border>

@@ -28,8 +28,6 @@ namespace WaferSimulator.UI.ViewModels
         public int Index { get; init; }
         public int X { get; init; }
         public int Y { get; init; }
-        public double MarkerLeft => X - 5;
-        public double MarkerTop => Y - 5;
     }
 
     public sealed class MainViewModel : INotifyPropertyChanged
@@ -43,7 +41,7 @@ namespace WaferSimulator.UI.ViewModels
         private int _inspectionCount;
         private WaferAlgorithmType _selectedAlgorithm = WaferAlgorithmType.AutoDetect;
         private string _statusText = "장비 대기 중...";
-        private string _resultText = "이미지를 로드하거나 샘플 웨이퍼로 알고리즘을 실행하세요.";
+        private string _resultText = "이미지를 로드하거나 샘플 웨이퍼로 검사를 실행하세요.";
         private string _imageSpecText = "입력 없음";
         private string _selectedAlgorithmText = "선택 알고리즘: 자동 결함 탐지";
         private string _monitoringButtonText = "반복 모니터링 시작";
@@ -142,7 +140,7 @@ namespace WaferSimulator.UI.ViewModels
                 bitmap.Freeze();
 
                 LoadBitmapSource(bitmap, "파일 로드");
-                ResultText = "이미지 로드 완료. 원하는 OpenCV 알고리즘 버튼을 눌러보세요.";
+                ResultText = "이미지 로드 완료. 원하는 알고리즘을 선택하거나 자동 검사를 실행하세요.";
                 StatusText = dialog.FileName;
             }
             catch (Exception ex) {
@@ -176,50 +174,40 @@ namespace WaferSimulator.UI.ViewModels
                 }
             }
 
-            PaintDefect(_inputPixels, _imageWidth, 150, 100, 5);
-            PaintDefect(_inputPixels, _imageWidth, 300, 250, 7);
-            PaintDefect(_inputPixels, _imageWidth, 420, 360, 4);
+            PaintDefect(_inputPixels, _imageWidth, _imageHeight, 150, 100, 5);
+            PaintDefect(_inputPixels, _imageWidth, _imageHeight, 300, 250, 7);
+            PaintDefect(_inputPixels, _imageWidth, _imageHeight, 420, 360, 4);
 
             InputImage = CreateBitmap(_inputPixels, _imageWidth, _imageHeight);
             ProcessedImage = null;
             ImageSpecText = "샘플 웨이퍼: 500 x 500, BGRA";
+            ResultText = "샘플 웨이퍼가 준비되었습니다. 검사를 실행하면 결함 후보를 표시합니다.";
         }
 
-        private static void PaintDefect(byte[] pixels, int stridePixels, int centerX, int centerY, int radius)
+        private static void PaintDefect(byte[] pixels, int width, int height, int centerX, int centerY, int radius)
         {
             for (int y = centerY - radius; y <= centerY + radius; y++) {
+                if (y < 0 || y >= height) {
+                    continue;
+                }
+
                 for (int x = centerX - radius; x <= centerX + radius; x++) {
+                    if (x < 0 || x >= width) {
+                        continue;
+                    }
+
                     int dx = x - centerX;
                     int dy = y - centerY;
                     if (dx * dx + dy * dy > radius * radius) {
                         continue;
                     }
 
-                    int offset = (y * stridePixels + x) * 4;
+                    int offset = (y * width + x) * 4;
                     pixels[offset] = 20;
                     pixels[offset + 1] = 20;
                     pixels[offset + 2] = 255;
                     pixels[offset + 3] = 255;
                 }
-
-                for (int i = 0; i < detectedCount; i++) {
-                    FaultList.Add(new FaultItem { Index = i + 1, X = outXArray[i], Y = outYArray[i] });
-                }
-
-                ProcessedImage = CreateBitmap(processedPixels, _imageWidth, _imageHeight);
-                _inspectionCount++;
-
-                ResultText = detectedCount > 0
-                    ? $"{GetAlgorithmDisplayName(algorithm)} 완료. 후보 좌표 {detectedCount}개를 표시했습니다."
-                    : $"{GetAlgorithmDisplayName(algorithm)} 완료. 이 모드는 처리 이미지 확인 중심입니다.";
-
-                StatusText = _isMonitoring
-                    ? $"반복 모니터링 실행 중... {_inspectionCount}회 처리 완료"
-                    : "엔진 상태 코드: SUCCESS";
-            }
-            catch (Exception ex) {
-                ResultText = "비전 코어 호출 중 오류가 발생했습니다.";
-                StatusText = ex.Message;
             }
         }
 
@@ -244,12 +232,6 @@ namespace WaferSimulator.UI.ViewModels
             if (parameter is string algorithmName && Enum.TryParse(algorithmName, out WaferAlgorithmType algorithm)) {
                 ExecuteAlgorithm(algorithm);
             }
-
-            _inspectionCount = 0;
-            _isMonitoring = true;
-            MonitoringButtonText = "반복 모니터링 중지";
-            ExecuteAlgorithm(_selectedAlgorithm);
-            _monitoringTimer.Start();
         }
 
         private void ExecuteAlgorithm(WaferAlgorithmType algorithm)
@@ -261,7 +243,7 @@ namespace WaferSimulator.UI.ViewModels
             byte[]? inputPixels = _inputPixels;
             if (inputPixels == null) {
                 ResultText = "입력 이미지가 준비되지 않았습니다.";
-                StatusText = "엔진 상태 코드: NO_INPUT";
+                StatusText = "상태: NO_INPUT";
                 return;
             }
 
@@ -291,7 +273,7 @@ namespace WaferSimulator.UI.ViewModels
 
                 if (detectedCount < 0) {
                     ResultText = "비전 코어가 입력 이미지를 처리하지 못했습니다.";
-                    StatusText = "엔진 상태 코드: INVALID_INPUT";
+                    StatusText = "상태: INVALID_INPUT";
                     return;
                 }
 
@@ -303,12 +285,12 @@ namespace WaferSimulator.UI.ViewModels
                 _inspectionCount++;
 
                 ResultText = detectedCount > 0
-                    ? $"{GetAlgorithmDisplayName(algorithm)} 완료. 후보 좌표 {detectedCount}개를 표시했습니다."
-                    : $"{GetAlgorithmDisplayName(algorithm)} 완료. 이 모드는 처리 이미지 확인 중심입니다.";
+                    ? $"{GetAlgorithmDisplayName(algorithm)} 완료. 결함 후보 {detectedCount}개를 찾았습니다."
+                    : $"{GetAlgorithmDisplayName(algorithm)} 완료. 처리 결과 이미지를 확인하세요.";
 
                 StatusText = _isMonitoring
                     ? $"반복 모니터링 실행 중... {_inspectionCount}회 처리 완료"
-                    : "엔진 상태 코드: SUCCESS";
+                    : "상태: SUCCESS";
             }
             catch (Exception ex) {
                 ResultText = "비전 코어 호출 중 오류가 발생했습니다.";

@@ -70,13 +70,9 @@ namespace
     {
         cv::Mat result = gray.clone();
 
-        // TODO: 침식 알고리즘을 구현하세요.
-        // 힌트: cv::getStructuringElement로 구조 요소(kernel)를 만든 뒤,
-        // cv::erode(gray, result, kernel, anchor, iterations)를 호출해보세요.
-        // 먼저 MORPH_RECT를 써보고, 웨이퍼처럼 둥근 형태에는 MORPH_ELLIPSE도 비교해보세요.
-		cv::Mat kernel = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(3, 3));
-		cv::Point anchor = cv::Point(-1, -1); // 기본값은 커널 중심입니다.
-		int iterations = 1; // 침식 반복 횟수입니다. 1로 시작해서 필요하면 늘려보세요.
+        cv::Mat kernel = cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(3, 3));
+        cv::Point anchor = cv::Point(-1, -1);
+        int iterations = 1;
         cv::erode(gray, result, kernel, anchor, iterations);
 
         return result;
@@ -86,13 +82,10 @@ namespace
     {
         cv::Mat result = gray.clone();
 
-        // TODO: 팽창 알고리즘을 구현하세요.
-        // 힌트: kernel을 만든 뒤 cv::dilate를 호출해보세요.
-        // 팽창은 밝은 결함 영역을 두껍게 하거나 끊어진 스크래치 경계를 이어볼 때 유용합니다.
-		cv::Mat kernel = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(3, 3));
-		cv::Point anchor = cv::Point(-1, -1); // 기본값은 커널 중심입니다.
-		int iterations = 1; // 팽창 반복 횟수입니다. 1로 시작해서 필요하면 늘려보세요.
-		cv::dilate(gray, result, kernel, anchor, iterations);
+        cv::Mat kernel = cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(3, 3));
+        cv::Point anchor = cv::Point(-1, -1);
+        int iterations = 1;
+        cv::dilate(gray, result, kernel, anchor, iterations);
 
         return result;
     }
@@ -101,9 +94,8 @@ namespace
     {
         cv::Mat result = gray.clone();
 
-        // TODO: 히스토그램 기반 처리를 구현하세요.
-        // 힌트: cv::equalizeHist(gray, result)부터 시작해보세요.
-        // 부분 대비를 조절하고 싶다면 cv::createCLAHE를 써서 전체 평활화와 비교해보세요.
+        cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE(2.0, cv::Size(8, 8));
+        clahe->apply(gray, result);
 
         return result;
     }
@@ -112,9 +104,10 @@ namespace
     {
         cv::Mat result = gray.clone();
 
-        // TODO: 가우시안 블러를 구현하세요.
-        // 힌트: cv::GaussianBlur(gray, result, cv::Size(odd, odd), sigma)를 호출해보세요.
-        // 커널의 가로/세로 크기는 3, 5, 7, 9처럼 홀수여야 합니다.
+        int kernelSize = 7;
+        double sigma = 1.5;
+
+        cv::GaussianBlur(gray, result, cv::Size(kernelSize, kernelSize), sigma);
 
         return result;
     }
@@ -123,10 +116,11 @@ namespace
     {
         cv::Mat result = gray.clone();
 
-        // TODO: 라플라시안 엣지 추출을 구현하세요.
-        // 힌트: cv::Laplacian 결과를 임시 CV_16S Mat에 받은 뒤,
-        // cv::convertScaleAbs로 다시 8비트 이미지로 변환해보세요.
-        // 커널 크기 1, 3, 5를 비교해보면 엣지 강도 차이를 보기 좋습니다.
+        cv::Mat blurred;
+        cv::Mat laplacian16;
+        cv::GaussianBlur(gray, blurred, cv::Size(3, 3), 0);
+        cv::Laplacian(blurred, laplacian16, CV_16S, 3);
+        cv::convertScaleAbs(laplacian16, result);
 
         return result;
     }
@@ -135,67 +129,34 @@ namespace
     {
         cv::Mat result = gray.clone();
 
-        // TODO: 이진화를 구현하세요.
-        // 힌트: 고정 임계값, Otsu 임계값, cv::adaptiveThreshold를 비교해보세요.
-        // 이진화 결과는 나중에 connectedComponentsWithStats에 넘겨 좌표를 뽑을 수 있습니다.
-        
-		//// 예시: 고정 임계값
-		double threshValue = 128; // 임계값을 0-255 사이에서 조절해보세요.
-		double maxValue = 255; // 임계값을 넘는 픽셀에 할당할 값입니다.
-		cv::threshold(gray, result, threshValue, maxValue, cv::THRESH_BINARY);
-
-		// 예시: Otsu 임계값(결함탐지)
-        //cv::Mat blur;
-        //cv::GaussianBlur(gray, blur, cv::Size(31, 31), 0);
-
-        //cv::Mat diff;
-        //cv::absdiff(gray, blur, diff);
-
-        //cv::threshold(diff, result, 0, 255, cv::THRESH_BINARY | cv::THRESH_OTSU);
-
-		// 예시: Otsu 임계값(엣지 결함용)
-        //cv::Mat lap16;
-        //cv::Mat lap;
-        //cv::Laplacian(gray, lap16, CV_16S, 3);
-        //cv::convertScaleAbs(lap16, lap);
-
-        //cv::threshold(lap, result, 0, 255, cv::THRESH_BINARY | cv::THRESH_OTSU);
-
-		 // 예시: 적응형 임계값
-		 //int blockSize = 11; // 임계값 계산에 사용할 블록 크기입니다. 홀수여야 합니다.
-		 //double C = 2; // 계산된 임계값에서 빼는 상수입니다. 조절해보세요.
-		 //cv::adaptiveThreshold(gray, result, maxValue, cv::ADAPTIVE_THRESH_MEAN_C,
-   //          cv::THRESH_BINARY, blockSize, C);
-
-		//// 예시: 삼각형 방법
-        //// 1. 큰 블러로 웨이퍼의 완만한 배경/패턴 흐름을 추정
-        //cv::Mat background;
-        //cv::GaussianBlur(gray, background, cv::Size(31, 31), 0);
-
-        //// 2. 원본과 배경 추정 이미지의 차이 계산
-        //cv::Mat diff;
-        //cv::absdiff(gray, background, diff);
-
-        //// 3. 차이가 큰 부분을 Triangle 방법으로 자동 이진화
-        //cv::threshold(
-        //    diff,
-        //    result,
-        //    0,
-        //    maxValue,
-        //    cv::THRESH_BINARY | cv::THRESH_TRIANGLE
-        //);
+        double threshValue = 128; // 임계값을 0-255 사이에서 조절해보세요.
+        double maxValue = 255; // 임계값을 넘는 픽셀에 할당할 값입니다.
+        cv::threshold(gray, result, threshValue, maxValue, cv::THRESH_BINARY);
 
         return result;
     }
 
     cv::Mat RunTemplateMatching(const cv::Mat& gray)
     {
-        cv::Mat result = gray.clone();
+        cv::Mat inverted;
+        cv::bitwise_not(gray, inverted);
 
-        // TODO: 템플릿 매칭을 구현하세요.
-        // 힌트: 비교할 template cv::Mat을 준비한 뒤 cv::matchTemplate을 호출해보세요.
-        // 이후 cv::minMaxLoc를 쓰거나 score map을 임계값 처리해서 매칭 위치를 찾을 수 있습니다.
-        // 나중에는 C#에서 템플릿 이미지 경로를 넘기거나, C++ 코어 내부에 템플릿을 캐시해볼 수 있습니다.
+        cv::Mat defectTemplate = cv::Mat::zeros(13, 13, CV_8UC1);
+        cv::circle(defectTemplate, cv::Point(6, 6), 4, cv::Scalar(255), cv::FILLED);
+
+        cv::Mat score;
+        cv::matchTemplate(inverted, defectTemplate, score, cv::TM_CCOEFF_NORMED);
+
+        cv::Mat normalizedScore;
+        cv::normalize(score, normalizedScore, 0, 255, cv::NORM_MINMAX, CV_8UC1);
+
+        cv::Mat result = cv::Mat::zeros(gray.size(), CV_8UC1);
+        cv::Rect roi(
+            defectTemplate.cols / 2,
+            defectTemplate.rows / 2,
+            normalizedScore.cols,
+            normalizedScore.rows);
+        normalizedScore.copyTo(result(roi));
 
         return result;
     }
@@ -226,13 +187,29 @@ namespace
     {
         cv::Mat mask = cv::Mat::zeros(gray.size(), CV_8UC1);
 
-        // TODO: 자동 탐지용 웨이퍼 영역 마스크를 구현하세요.
-        // 힌트: 먼저 이진화로 어두운 배경과 웨이퍼를 분리해보세요.
-        // 그 다음 morphology close/open으로 작은 구멍이나 고립된 배경 노이즈를 정리해보세요.
-        // 예시 흐름:
-        //   1. cv::threshold(gray, mask, value, 255, cv::THRESH_BINARY)
-        //   2. cv::morphologyEx(mask, mask, cv::MORPH_CLOSE, kernel)
-        //   3. cv::morphologyEx(mask, mask, cv::MORPH_OPEN, kernel)
+        cv::threshold(gray, mask, 10, 255, cv::THRESH_BINARY);
+
+        cv::Mat kernel = cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(9, 9));
+        cv::morphologyEx(mask, mask, cv::MORPH_CLOSE, kernel);
+        cv::morphologyEx(mask, mask, cv::MORPH_OPEN, kernel);
+
+        cv::Mat labels, stats, centroids;
+        int labelCount = cv::connectedComponentsWithStats(mask, labels, stats, centroids, 8);
+        int largestLabel = 0;
+        int largestArea = 0;
+
+        for (int i = 1; i < labelCount; i++) {
+            int area = stats.at<int>(i, cv::CC_STAT_AREA);
+            if (area > largestArea) {
+                largestArea = area;
+                largestLabel = i;
+            }
+        }
+
+        if (largestLabel > 0) {
+            mask = labels == largestLabel;
+            mask.convertTo(mask, CV_8UC1, 255);
+        }
 
         return mask;
     }
@@ -241,22 +218,44 @@ namespace
     {
         cv::Mat defectMask = cv::Mat::zeros(gray.size(), CV_8UC1);
 
-        // TODO: 자동 결함 탐지 알고리즘을 구현하세요.
-        // 힌트: 여기에서 개별 알고리즘들을 조합할 수 있습니다.
-        // 실험해볼 만한 파이프라인:
-        //   1. 히스토그램 평활화나 CLAHE로 대비를 개선합니다.
-        //   2. 가우시안 블러로 무작위 노이즈를 줄입니다.
-        //   3. 큰 블러나 morphology로 배경/패턴을 추정합니다.
-        //   4. cv::absdiff로 원본과 배경 추정 이미지를 비교합니다.
-        //   5. threshold나 adaptiveThreshold로 차이 이미지를 이진화합니다.
-        //   6. 필요하면 Laplacian이나 Canny로 엣지성 결함을 추가합니다.
-        //   7. cv::bitwise_and로 waferMask 내부 후보만 남깁니다.
-        //   8. 침식/팽창/open/close로 마스크를 정리합니다.
-        //
-        // CV_8UC1 이진 마스크를 반환하세요:
-        //   0   = 정상 영역
-        //   255 = 결함 후보
-        (void)waferMask;
+        if (gray.empty() || waferMask.empty()) {
+            return defectMask;
+        }
+
+        cv::Mat enhanced;
+        cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE(2.0, cv::Size(8, 8));
+        clahe->apply(gray, enhanced);
+
+        cv::Mat background;
+        cv::GaussianBlur(enhanced, background, cv::Size(31, 31), 0);
+
+        cv::Mat localDifference;
+        cv::absdiff(enhanced, background, localDifference);
+
+        cv::Scalar mean;
+        cv::Scalar stddev;
+        cv::meanStdDev(localDifference, mean, stddev, waferMask);
+
+        double thresholdValue = std::max(18.0, mean[0] + stddev[0] * 2.0);
+        cv::threshold(localDifference, defectMask, thresholdValue, 255, cv::THRESH_BINARY);
+
+        cv::Mat laplacian16;
+        cv::Mat edgeStrength;
+        cv::Laplacian(enhanced, laplacian16, CV_16S, 3);
+        cv::convertScaleAbs(laplacian16, edgeStrength);
+
+        cv::Mat edgeMask;
+        cv::threshold(edgeStrength, edgeMask, 0, 255, cv::THRESH_BINARY | cv::THRESH_OTSU);
+        cv::bitwise_or(defectMask, edgeMask, defectMask);
+
+        cv::Mat innerWaferMask;
+        cv::Mat edgeClearKernel = cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(11, 11));
+        cv::erode(waferMask, innerWaferMask, edgeClearKernel);
+        cv::bitwise_and(defectMask, innerWaferMask, defectMask);
+
+        cv::Mat cleanupKernel = cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(3, 3));
+        cv::morphologyEx(defectMask, defectMask, cv::MORPH_OPEN, cleanupKernel);
+        cv::morphologyEx(defectMask, defectMask, cv::MORPH_CLOSE, cleanupKernel);
 
         return defectMask;
     }
