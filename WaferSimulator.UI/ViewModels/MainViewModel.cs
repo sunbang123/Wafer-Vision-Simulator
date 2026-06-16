@@ -47,6 +47,7 @@ namespace WaferSimulator.UI.ViewModels
         private string _monitoringButtonText = "반복 모니터링 시작";
         private ImageSource? _inputImage;
         private ImageSource? _processedImage;
+        private ImageSource? _templateImage;
         private bool _isMonitoring;
         private ObservableCollection<FaultItem> _faultList = new ObservableCollection<FaultItem>();
 
@@ -92,6 +93,12 @@ namespace WaferSimulator.UI.ViewModels
             set { _processedImage = value; OnPropertyChanged(); }
         }
 
+        public ImageSource? TemplateImage
+        {
+            get => _templateImage;
+            set { _templateImage = value; OnPropertyChanged(); }
+        }
+
         public ObservableCollection<FaultItem> FaultList
         {
             get => _faultList;
@@ -99,6 +106,7 @@ namespace WaferSimulator.UI.ViewModels
         }
 
         public ICommand LoadImageCommand { get; }
+        public ICommand LoadSampleCommand { get; }
         public ICommand AlgorithmCommand { get; }
         public ICommand StartInspectionCommand { get; }
         public ICommand ToggleMonitoringCommand { get; }
@@ -106,6 +114,7 @@ namespace WaferSimulator.UI.ViewModels
         public MainViewModel()
         {
             LoadImageCommand = new RelayCommand(_ => LoadImage());
+            LoadSampleCommand = new RelayCommand(_ => ResetToSampleWafer());
             AlgorithmCommand = new RelayCommand(ExecuteAlgorithmFromParameter);
             StartInspectionCommand = new RelayCommand(_ => ExecuteAlgorithm(WaferAlgorithmType.AutoDetect));
             ToggleMonitoringCommand = new RelayCommand(_ => ToggleMonitoring());
@@ -116,6 +125,7 @@ namespace WaferSimulator.UI.ViewModels
             };
             _monitoringTimer.Tick += (_, _) => ExecuteAlgorithm(_selectedAlgorithm);
 
+            TemplateImage = CreateTemplatePreview();
             LoadSampleWafer();
         }
 
@@ -140,6 +150,7 @@ namespace WaferSimulator.UI.ViewModels
                 bitmap.Freeze();
 
                 LoadBitmapSource(bitmap, "파일 로드");
+                FaultList.Clear();
                 ResultText = "이미지 로드 완료. 원하는 알고리즘을 선택하거나 자동 검사를 실행하세요.";
                 StatusText = dialog.FileName;
             }
@@ -147,6 +158,16 @@ namespace WaferSimulator.UI.ViewModels
                 ResultText = "이미지 로드 중 오류가 발생했습니다.";
                 StatusText = ex.Message;
             }
+        }
+
+        private void ResetToSampleWafer()
+        {
+            StopMonitoring();
+            _selectedAlgorithm = WaferAlgorithmType.AutoDetect;
+            SelectedAlgorithmText = $"선택 알고리즘: {GetAlgorithmDisplayName(_selectedAlgorithm)}";
+            LoadSampleWafer();
+            FaultList.Clear();
+            StatusText = "샘플 웨이퍼로 돌아왔습니다.";
         }
 
         private void LoadSampleWafer()
@@ -178,8 +199,9 @@ namespace WaferSimulator.UI.ViewModels
             PaintDefect(_inputPixels, _imageWidth, _imageHeight, 300, 250, 7);
             PaintDefect(_inputPixels, _imageWidth, _imageHeight, 420, 360, 4);
 
-            InputImage = CreateBitmap(_inputPixels, _imageWidth, _imageHeight);
-            ProcessedImage = null;
+            var sampleImage = CreateBitmap(_inputPixels, _imageWidth, _imageHeight);
+            InputImage = sampleImage;
+            ProcessedImage = sampleImage;
             ImageSpecText = "샘플 웨이퍼: 500 x 500, BGRA";
             ResultText = "샘플 웨이퍼가 준비되었습니다. 검사를 실행하면 결함 후보를 표시합니다.";
         }
@@ -301,9 +323,7 @@ namespace WaferSimulator.UI.ViewModels
         private void ToggleMonitoring()
         {
             if (_isMonitoring) {
-                _monitoringTimer.Stop();
-                _isMonitoring = false;
-                MonitoringButtonText = "반복 모니터링 시작";
+                StopMonitoring();
                 StatusText = "반복 모니터링 중지";
                 return;
             }
@@ -313,6 +333,13 @@ namespace WaferSimulator.UI.ViewModels
             MonitoringButtonText = "반복 모니터링 중지";
             ExecuteAlgorithm(_selectedAlgorithm);
             _monitoringTimer.Start();
+        }
+
+        private void StopMonitoring()
+        {
+            _monitoringTimer.Stop();
+            _isMonitoring = false;
+            MonitoringButtonText = "반복 모니터링 시작";
         }
 
         private static string GetAlgorithmDisplayName(WaferAlgorithmType algorithm)
@@ -329,6 +356,31 @@ namespace WaferSimulator.UI.ViewModels
                 WaferAlgorithmType.TemplateMatching => "템플릿 매칭",
                 _ => "알 수 없음"
             };
+        }
+
+        private static BitmapSource CreateTemplatePreview()
+        {
+            const int size = 13;
+            const int radius = 4;
+            const int center = 6;
+            byte[] pixels = new byte[size * size * 4];
+
+            for (int y = 0; y < size; y++) {
+                for (int x = 0; x < size; x++) {
+                    int offset = (y * size + x) * 4;
+                    int dx = x - center;
+                    int dy = y - center;
+                    bool inside = dx * dx + dy * dy <= radius * radius;
+                    byte value = inside ? (byte)255 : (byte)0;
+
+                    pixels[offset] = value;
+                    pixels[offset + 1] = value;
+                    pixels[offset + 2] = value;
+                    pixels[offset + 3] = 255;
+                }
+            }
+
+            return CreateBitmap(pixels, size, size);
         }
 
         private static BitmapSource CreateBitmap(byte[] pixels, int width, int height)

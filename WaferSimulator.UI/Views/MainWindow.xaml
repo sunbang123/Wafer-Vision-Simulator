@@ -18,7 +18,7 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
-            <RowDefinition Height="180"/>
+            <RowDefinition Height="190"/>
         </Grid.RowDefinitions>
 
         <DockPanel Grid.Row="0" Margin="0,0,0,12" LastChildFill="False">
@@ -31,6 +31,8 @@
             <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
                 <Button Content="이미지 로드" Width="120" Height="36" Margin="0,0,8,0"
                         Command="{Binding LoadImageCommand}" Cursor="Hand"/>
+                <Button Content="샘플 이미지" Width="120" Height="36" Margin="0,0,8,0"
+                        Command="{Binding LoadSampleCommand}" Cursor="Hand"/>
                 <Button Content="자동 검사" Width="120" Height="36" Margin="0,0,8,0"
                         Background="#2563EB" Foreground="White" FontWeight="SemiBold"
                         Command="{Binding StartInspectionCommand}" Cursor="Hand"/>
@@ -143,10 +145,28 @@
             </Border>
 
             <Border Grid.Column="2" BorderBrush="#D7DEE8" BorderThickness="1" Background="#FFFFFF" Padding="12">
-                <StackPanel>
-                    <TextBlock Text="검사 상태" FontSize="14" FontWeight="SemiBold" Foreground="#1F2933" Margin="0,0,0,10"/>
-                    <TextBlock Text="{Binding StatusText}" FontSize="12" Foreground="#4B5563" TextWrapping="Wrap" LineHeight="19"/>
-                </StackPanel>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="96"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                        <TextBlock Text="검사 상태" FontSize="14" FontWeight="SemiBold" Foreground="#1F2933" Margin="0,0,0,10"/>
+                        <TextBlock Text="{Binding StatusText}" FontSize="12" Foreground="#4B5563" TextWrapping="Wrap" LineHeight="19"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1">
+                        <TextBlock Text="사용 템플릿" FontSize="13" FontWeight="SemiBold" Foreground="#1F2933" Margin="0,0,0,8"/>
+                        <Border Width="78" Height="78" Background="#0B1020" BorderBrush="#D7DEE8" BorderThickness="1">
+                            <Image Source="{Binding TemplateImage}"
+                                   Stretch="Uniform"
+                                   RenderOptions.BitmapScalingMode="NearestNeighbor"
+                                   SnapsToDevicePixels="True"/>
+                        </Border>
+                        <TextBlock Text="13 x 13 원형 패치" FontSize="11" Foreground="#697386" TextWrapping="Wrap" Margin="0,6,0,0"/>
+                    </StackPanel>
+                </Grid>
             </Border>
         </Grid>
     </Grid>
